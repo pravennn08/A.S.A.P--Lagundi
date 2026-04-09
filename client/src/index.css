@@ -1,0 +1,34 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+
+:root {
+  font-family: "Geist", sans-serif;
+}
+
+@layer utilities {
+  .bg-brand-green {
+    background-color: #02871e;
+  }
+  .text-brand-green {
+    color: #02871e;
+  }
+
+  .bg-light-green {
+    background-color: #07a628;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
