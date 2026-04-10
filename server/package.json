@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "server": "nodemon server.js",
+    "start": "nodemon server.js"
+  },
   "dependencies": {
     "a.s.a.p-lagundi": "file:.."
   }

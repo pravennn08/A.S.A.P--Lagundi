@@ -25,12 +25,15 @@ const app = express();
 const server = http.createServer(app);
 initSocket(server);
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  }),
-);
+if (process.env.NODE_ENV !== "production") {
+  app.use(
+    cors({
+      origin: "http://localhost:5173",
+      credentials: true,
+    }),
+  );
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -45,11 +48,13 @@ app.use("/api/report", reportRouter);
 app.use("/api/schedule", scheduleRouter);
 app.use("/api", userRouter);
 
-app.use(express.static(path.join(__dirname, "client", "dist")));
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "client", "dist")));
 
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/", "dist", "index.html"));
-});
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "../client/", "dist", "index.html"));
+  });
+}
 
 app.use(errorHandler);
 app.use(notFound);
