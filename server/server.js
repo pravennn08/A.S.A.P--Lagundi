@@ -19,6 +19,8 @@ dotenv.config();
 
 const PORT = process.env.PORT || 8000;
 
+const __dirname = path.resolve();
+
 const app = express();
 const server = http.createServer(app);
 initSocket(server);
@@ -42,6 +44,12 @@ app.use("/api/auth", authRouter);
 app.use("/api/report", reportRouter);
 app.use("/api/schedule", scheduleRouter);
 app.use("/api", userRouter);
+
+app.use(express.static(path.join(__dirname, "client", "dist")));
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/", "dist", "index.html"));
+});
 
 app.use(errorHandler);
 app.use(notFound);
