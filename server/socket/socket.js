@@ -7,7 +7,7 @@ export const initSocket = (server) => {
 
   io = new Server(server, {
     cors: {
-      origin: isDev ? "http://localhost:5173" : true, // 👈 allow same-origin in production
+      origin: isDev ? "http://localhost:5173" : true,
       credentials: true,
     },
     transports: ["websocket", "polling"],
