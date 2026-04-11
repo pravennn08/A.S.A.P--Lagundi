@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { useReportStore } from "../../store/useReportStore";
 
 const ReportDetailsModal = ({ report, isOpen, onClose, onStatusChange }) => {
+  const BASE_URL =
+    import.meta.env.MODE === "development" ? "http://localhost:5000" : "";
   const { updateReportStatus, fetchReportFeed, fetchReportStats } =
     useReportStore();
 
@@ -129,8 +131,8 @@ const ReportDetailsModal = ({ report, isOpen, onClose, onStatusChange }) => {
                 <img
                   src={
                     report.evidence.startsWith("http")
-                      ? report.evidence.replace("5173", "5000")
-                      : `http://localhost:5000/${report.evidence}`
+                      ? report.evidence
+                      : `${BASE_URL}/${report.evidence}`
                   }
                   alt="evidence"
                   className="w-full h-56 object-cover"
