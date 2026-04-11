@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { io } from "socket.io-client";
 import axios from "../lib/axios.js";
 import { toast } from "react-toastify";
-
+const BASE_URL =
+  import.meta.env.MODE === "development" ? "http://localhost:5000" : "";
 let socket;
 
 export const useReportStore = create((set, get) => ({
@@ -31,7 +32,10 @@ export const useReportStore = create((set, get) => ({
   connectSocket: () => {
     if (socket) return;
 
-    socket = io("http://localhost:5000");
+    socket = io(BASE_URL, {
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+    });
 
     socket.on("connect", () => {
       console.log("SOCKET CONNECTED:", socket.id);
