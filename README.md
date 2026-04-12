@@ -103,7 +103,7 @@ This folder is used for storing uploaded files (e.g., report images).
 #### Start Backend
 ```bash
 cd server
-npm run dev
+npm run server
 ```
 
 #### Start Frontend
