@@ -22,6 +22,7 @@ import Settings from "./pages/settings/Settings";
 import Spinner from "./utils/Spinner.jsx";
 import { useAuthStore } from "./store/useAuthStore.js";
 import { useEffect } from "react";
+import ReportSuccessPage from "./pages/public/ReportSuccessPage.jsx";
 
 function App() {
   const { isCheckingAuth, isAuthenticated, checkUserAuth, user } =
@@ -71,6 +72,7 @@ function App() {
         />
 
         <Route path="/ReportForm" element={<ReportForm />} />
+        <Route path="/ReportSuccess" element={<ReportSuccessPage />} />
 
         <Route
           path="/admin"

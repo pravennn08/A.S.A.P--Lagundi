@@ -1,5 +1,12 @@
 import { useMemo, useState, useEffect } from "react";
-import { Search, Filter, ChevronDown, Eye } from "lucide-react";
+import {
+  Search,
+  Filter,
+  ChevronDown,
+  Eye,
+  MapPin,
+  Calendar,
+} from "lucide-react";
 import ReportDetailsModal from "../../components/reports/ReportDetailsModal";
 import {
   Card,
@@ -11,19 +18,21 @@ import {
 import Button from "../../components/ui/Button";
 import { useReportStore } from "../../store/useReportStore";
 import Spinner from "../../utils/Spinner";
+import { useLocation } from "react-router-dom";
+import ReportsFilters from "../../components/filters/ReportsFilters";
 
-const statusOptions = ["All Statuses", "Pending", "In Progress", "Resolved"];
-const sitioOptions = [
-  "All Sitios",
-  "Bulaklak",
-  "Centro",
-  "Queensborough",
-  "Paroba",
-  "Paz Ville",
-  "Sto. Niño",
-  "Tramo",
-  "Troso",
-];
+const statusOptions = ["All Status", "Pending", "In Progress", "Resolved"];
+
+const sitioOptions = {
+  Bulaklak: ["Bulaklak", "Bulaklak Gubat"],
+  Centro: ["Centro", "Jasa Main Road", "Beverly Place", "El Grande"],
+  Queensborough: ["Queensborough"],
+  Paroba: ["Paroba", "Parobang Gubat"],
+  "Paz Ville": ["Paz Ville"],
+  "Sto. Niño": ["Sto. Niño"],
+  Tramo: ["Tramo"],
+  Troso: ["Looban", "Riverside", "Vista Roma", "The Belle Enclaves"],
+};
 
 const urgencyDotColors = {
   High: "bg-orange-500",
@@ -37,35 +46,71 @@ const statusBadgeStyles = {
   Pending: "bg-yellow-100 text-yellow-700",
 };
 
+const REPORTS_PER_PAGE = 10;
+
 const ReportsManagement = () => {
+  const location = useLocation();
   const {
     reports,
     fetchReports,
     updateReportStatus,
     isLoading,
     fetchSingleReport,
-    singleReport,
   } = useReportStore();
 
   const [selectedReport, setSelectedReport] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Statuses");
+  const [statusFilter, setStatusFilter] = useState("All Status");
   const [sitioFilter, setSitioFilter] = useState("All Sitios");
+
+  const [subLocationFilter, setSubLocationFilter] =
+    useState("All Sub-locations");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     fetchReports();
   }, []);
+
+  useEffect(() => {
+    const openReportId = location.state?.openReportId;
+    if (!openReportId || reports.length === 0) return;
+
+    const matchedReport = reports.find((report) => report.id === openReportId);
+    if (!matchedReport) return;
+
+    handleView(matchedReport);
+
+    window.history.replaceState({}, document.title);
+  }, [location.state, reports]);
+
+  const availableSubLocations =
+    sitioFilter !== "All Sitios" ? sitioOptions[sitioFilter] || [] : [];
 
   const handleView = async (report) => {
     await fetchSingleReport(report.id);
     setSelectedReport(useReportStore.getState().singleReport);
   };
+
   const handleCloseModal = () => {
     setSelectedReport(null);
   };
 
   const handleStatusChange = async (id, newStatus) => {
     await updateReportStatus(id, newStatus);
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("All Status");
+    setSitioFilter("All Sitios");
+    setSubLocationFilter("All Sub-locations");
+    setDateFrom("");
+    setDateTo("");
+    setCurrentPage(1);
   };
 
   const filteredReports = useMemo(() => {
@@ -80,16 +125,73 @@ const ReportsManagement = () => {
         report.reporterName.toLowerCase().includes(term);
 
       const matchesStatus =
-        statusFilter === "All Statuses" ||
+        statusFilter === "All Status" ||
         report.status.toLowerCase() === statusFilter.toLowerCase();
 
       const matchesSitio =
         sitioFilter === "All Sitios" || report.sitio === sitioFilter;
 
-      return matchesSearch && matchesStatus && matchesSitio;
+      const matchesSubLocation =
+        subLocationFilter === "All Sub-locations" ||
+        report.subLocation === subLocationFilter;
+
+      const reportDate = new Date(report.dateTime);
+      const fromDate = dateFrom ? new Date(dateFrom) : null;
+      const toDate = dateTo ? new Date(dateTo) : null;
+
+      if (toDate) {
+        toDate.setHours(23, 59, 59, 999);
+      }
+
+      const matchesDateFrom = !fromDate || reportDate >= fromDate;
+      const matchesDateTo = !toDate || reportDate <= toDate;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesSitio &&
+        matchesSubLocation &&
+        matchesDateFrom &&
+        matchesDateTo
+      );
     });
-  }, [reports, searchTerm, statusFilter, sitioFilter]);
+  }, [
+    reports,
+    searchTerm,
+    statusFilter,
+    sitioFilter,
+    subLocationFilter,
+    dateFrom,
+    dateTo,
+  ]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    statusFilter,
+    sitioFilter,
+    subLocationFilter,
+    dateFrom,
+    dateTo,
+  ]);
+
+  const totalPages = Math.ceil(filteredReports.length / REPORTS_PER_PAGE);
+
+  const paginatedReports = useMemo(() => {
+    const startIndex = (currentPage - 1) * REPORTS_PER_PAGE;
+    return filteredReports.slice(startIndex, startIndex + REPORTS_PER_PAGE);
+  }, [filteredReports, currentPage]);
+
+  const startEntry =
+    filteredReports.length === 0 ? 0 : (currentPage - 1) * REPORTS_PER_PAGE + 1;
+  const endEntry = Math.min(
+    currentPage * REPORTS_PER_PAGE,
+    filteredReports.length,
+  );
+
   if (isLoading) return <Spinner />;
+
   return (
     <div className="min-h-screen p-6 ">
       <div className="mb-6">
@@ -99,79 +201,21 @@ const ReportsManagement = () => {
         </p>
       </div>
 
-      <Card className="mb-6 rounded-2xl" size="default">
-        <CardHeader>
-          <CardTitle className="text-2xl">Filters</CardTitle>
-          <CardDescription>
-            Search and narrow down reports by status and sitio
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <div>
-              <label className="mb-2 flex items-center gap-2 text-base font-semibold text-gray-700">
-                <Search size={18} />
-                Search
-              </label>
-              <input
-                type="text"
-                placeholder="Search by ID, reporter, type, sitio..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 text-sm outline-none transition focus:border-blue-500 focus:bg-white"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 flex items-center gap-2 text-base font-semibold text-gray-700">
-                <Filter size={18} />
-                Status
-              </label>
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="h-10 w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-4 pr-10 text-sm font-medium outline-none transition focus:border-blue-500 focus:bg-white"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={18}
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-base font-semibold text-gray-700">
-                Sitio
-              </label>
-              <div className="relative">
-                <select
-                  value={sitioFilter}
-                  onChange={(e) => setSitioFilter(e.target.value)}
-                  className="h-10 w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-4 pr-10 text-sm font-medium outline-none transition focus:border-blue-500 focus:bg-white"
-                >
-                  {sitioOptions.map((sitio) => (
-                    <option key={sitio} value={sitio}>
-                      {sitio}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={18}
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <ReportsFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        sitioFilter={sitioFilter}
+        setSitioFilter={setSitioFilter}
+        subLocationFilter={subLocationFilter}
+        setSubLocationFilter={setSubLocationFilter}
+        dateFrom={dateFrom}
+        setDateFrom={setDateFrom}
+        dateTo={dateTo}
+        setDateTo={setDateTo}
+        clearFilters={clearFilters}
+      />
 
       <Card className="rounded-2xl" size="default">
         <CardHeader>
@@ -209,8 +253,8 @@ const ReportsManagement = () => {
               </thead>
 
               <tbody>
-                {filteredReports.length > 0 ? (
-                  filteredReports.map((report) => (
+                {paginatedReports.length > 0 ? (
+                  paginatedReports.map((report) => (
                     <tr key={report.id} className="text-sm text-slate-800">
                       <td className="border-b border-gray-200 px-4 py-2 font-semibold">
                         {report.id}
@@ -278,6 +322,43 @@ const ReportsManagement = () => {
               </tbody>
             </table>
           </div>
+
+          {filteredReports.length > 0 && (
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-slate-600">
+                Showing {startEntry} to {endEntry} of {filteredReports.length}{" "}
+                reports
+              </p>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="rounded-xl px-3 py-2"
+                >
+                  Previous
+                </Button>
+
+                <span className="text-sm text-slate-600">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="rounded-xl px-3 py-2"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -19,17 +19,36 @@ const sitioOptions = {
 };
 
 const incidentTypes = [
-  "Fire Incident",
   "Medical Emergency",
-  "Crime / Theft",
+  "Fire Incident",
+  "Life-Threatening Crime (Kidnapping, Shooting, Ongoing Brawl, etc.)",
+  "Natural Disaster (Flooding, Fallen Wires/Trees, etc.)",
   "Vehicular Accident",
-  "Flooding",
-  "Noise Complaint",
-  "Domestic Concern",
+  "VAWC & Child Abuse (RA 9262 / RA 7610)",
+  "Illegal Drug Activity",
+  "Serious Theft/Robbery",
+  "Carnapping/Motornapping",
+  "Fraud & Identity Theft",
+  "Serious Threats/Physical Harassment",
+  "Cyberbullying / Online Harassment",
+  "Possession of a Deadly Weapon",
+  "Missing Person",
+  "Missing Animal/Livestock",
+  "Estafa & Financial Crimes",
+  "Unresolved Debt / Money Claims",
+  "Contract & Transaction Disputes (Terminal Use Agreement, Illegal Sale, etc.)",
+  "Property & Boundary Conflicts (Encroachment, Fence Disputes, etc.)",
+  "Family/Domestic Quarrel (Heated Arguments)",
+  "Utility Pilferage (Illegal Electricity/Water Use, etc.)",
+  "Vandalism/Property Damage",
+  "Crimes Against Honor (Slander, Defamation, Libel, etc.)",
+  "Marital Issues (Adultery, Concubinage, etc.)",
+  "Public Disturbance (Alarms & Scandals, Noise, Drunkenness, etc.)",
+  "Neighborhood Nuisance (Stray Animals, Waste Disposal, Parking/Obstruction, etc.)",
+  "Ordinance Violations (Curfew, Smoking/Drinking Ban, etc.)",
+  "Lost and Found Items",
   "Others",
 ];
-
-const urgencyLevels = ["Low", "Medium", "High", "Emergency"];
 
 const ReportForm = () => {
   const navigate = useNavigate();
@@ -42,7 +61,8 @@ const ReportForm = () => {
   const [contactNumber, setContactNumber] = useState("");
   const [exactLocation, setExactLocation] = useState("");
   const [incidentType, setIncidentType] = useState("");
-  const [urgencyLevel, setUrgencyLevel] = useState("");
+  const [otherIncidentType, setOtherIncidentType] = useState("");
+
   const [description, setDescription] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -96,8 +116,8 @@ const ReportForm = () => {
     const allowedImageTypes = ["image/png", "image/jpeg", "image/jpg"];
     const allowedVideoTypes = ["video/mp4"];
 
-    const maxImageSize = 5 * 1024 * 1024; // 5MB
-    const maxVideoSize = 10 * 1024 * 1024; // 10MB
+    const maxImageSize = 5 * 1024 * 1024;
+    const maxVideoSize = 10 * 1024 * 1024;
 
     if (![...allowedImageTypes, ...allowedVideoTypes].includes(file.type)) {
       toast.error("Only PNG, JPG, JPEG, and MP4 files are allowed.");
@@ -157,8 +177,8 @@ const ReportForm = () => {
       return;
     }
 
-    if (!urgencyLevel) {
-      toast.error("Please select an urgency level.");
+    if (incidentType === "Others" && !otherIncidentType.trim()) {
+      toast.error("Please specify the incident type.");
       return;
     }
 
@@ -171,21 +191,25 @@ const ReportForm = () => {
       toast.error("You must agree to the terms and conditions.");
       return;
     }
-    const formattedUrgency = urgencyLevel.toLowerCase();
+
+    const finalIncidentType =
+      incidentType === "Others" ? otherIncidentType : incidentType;
+
     const formData = {
       fullName,
       contactNumber,
       sitio: selectedSitio,
       subLocation: selectedSubLocation,
       exactLocation,
-      incidentType,
-      urgencyLevel: formattedUrgency,
+      incidentType: finalIncidentType,
       description,
       evidence: selectedFile,
     };
+    // add siguro tayo try and catch so that if there is an error, we can catch it and show a toast error message instead of navigating to the success page
     await createReport(formData);
     console.log("Submitted Report:", formData);
     toast.success("Report submitted successfully.");
+    navigate("/ReportSuccess"); //still static
 
     setFullName("");
     setContactNumber("");
@@ -193,7 +217,7 @@ const ReportForm = () => {
     setSelectedSubLocation("");
     setExactLocation("");
     setIncidentType("");
-    setUrgencyLevel("");
+    setOtherIncidentType("");
     setDescription("");
     setAgreed(false);
     setSelectedFile(null);
@@ -215,7 +239,7 @@ const ReportForm = () => {
       <main className="mx-auto flex max-w-5xl justify-center px-4 py-6">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white px-5 py-6 shadow-sm"
+          className="w-full max-w-2xl rounded-xl mt-30 border border-gray-200 bg-white px-5 py-6 shadow-sm"
         >
           <h1 className="text-xl font-semibold">Incident Report Form</h1>
           <p className="mt-1 text-xs text-gray-600">
@@ -324,7 +348,12 @@ const ReportForm = () => {
                 <div className="relative mt-1">
                   <select
                     value={incidentType}
-                    onChange={(e) => setIncidentType(e.target.value)}
+                    onChange={(e) => {
+                      setIncidentType(e.target.value);
+                      if (e.target.value !== "Others") {
+                        setOtherIncidentType("");
+                      }
+                    }}
                     className="h-10 w-full appearance-none rounded-lg border border-gray-200 bg-gray-50 px-3 pr-8 text-sm outline-none transition focus:border-blue-400"
                   >
                     <option value="">Select incident type</option>
@@ -338,6 +367,21 @@ const ReportForm = () => {
                 </div>
               </div>
 
+              {incidentType === "Others" && (
+                <div>
+                  <label className="text-xs font-medium text-gray-800">
+                    Please specify <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={otherIncidentType}
+                    onChange={(e) => setOtherIncidentType(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm outline-none transition focus:border-blue-400"
+                    placeholder="Enter incident type"
+                  />
+                </div>
+              )}
+
               <div>
                 <label className="text-xs font-medium text-gray-800">
                   Date & Time of Incident
@@ -349,27 +393,6 @@ const ReportForm = () => {
                   className="mt-1 h-10 w-full rounded-lg border border-gray-200 bg-gray-100 px-3 text-xs text-gray-600 outline-none"
                 />
                 <p className="mt-1 text-[11px] text-gray-500">Auto-filled</p>
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-gray-800">
-                  Urgency Level <span className="text-red-500">*</span>
-                </label>
-                <div className="relative mt-1">
-                  <select
-                    value={urgencyLevel}
-                    onChange={(e) => setUrgencyLevel(e.target.value)}
-                    className="h-10 w-full appearance-none rounded-lg border border-gray-200 bg-gray-50 px-3 pr-8 text-sm outline-none transition focus:border-blue-400"
-                  >
-                    <option value="">Select urgency level</option>
-                    {urgencyLevels.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
-                </div>
               </div>
             </div>
           </section>

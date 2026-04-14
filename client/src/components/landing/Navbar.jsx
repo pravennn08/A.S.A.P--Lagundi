@@ -11,7 +11,7 @@ const Navbar = ({
   logo = "/logo/lagundi.png",
   rightContent,
 }) => (
-  <header className="border-b border-gray-200 bg-white px-6  shadow lg:px-12">
+  <header className="fixed left-0 right-0 top-0 z-10 border-b border-gray-200 bg-white px-6 shadow lg:px-12">
     <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between py-4">
       <div className="flex items-center gap-2">
         <img

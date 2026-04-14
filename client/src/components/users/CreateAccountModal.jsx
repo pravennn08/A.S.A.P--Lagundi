@@ -98,7 +98,7 @@ const CreateAccountModal = ({
     "h-10 w-full appearance-none rounded-xl border border-gray-200 bg-gray-100 px-4 pr-10 text-sm text-gray-700 outline-none transition focus:border-blue-500 focus:bg-white";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs px-4">
       <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-semibold text-gray-800">

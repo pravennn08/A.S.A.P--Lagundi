@@ -1,11 +1,14 @@
 import React from "react";
 import { Card, CardContent } from "../ui/Card";
 
-const StatCard = ({ item }) => {
+const StatCard = ({ item, onClick }) => {
   const Icon = item.icon;
 
   return (
-    <Card className="p-6 flex justify-between min-h-[130px]">
+    <Card
+      className="p-6 flex justify-between min-h-[130px] hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex justify-between items-start">
         <div>
           <p className="text-sm font-medium text-gray-500">{item.label}</p>

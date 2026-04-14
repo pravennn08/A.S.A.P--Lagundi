@@ -20,7 +20,7 @@ const UserDetailsModal = ({ user, isOpen, onClose, onStatusChange }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs px-4">
       <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
         <div className="mb-6 flex items-start justify-between">
           <div>

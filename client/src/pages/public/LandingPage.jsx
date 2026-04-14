@@ -20,8 +20,9 @@ const LandingPage = () => {
         onBack={() => navigate("/login")}
       />
       <HeroSection />
-      <CoverageSection />
       <AdvisorySection />
+      <CoverageSection />
+
       <Footer />
     </div>
   );
