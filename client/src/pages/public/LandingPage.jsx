@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { LuLogIn } from "react-icons/lu";
 import CoverageSection from "../../components/landing/CoverageSection";
+import Hotlines from "../../components/landing/Hotlines";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const LandingPage = () => {
       <HeroSection />
       <AdvisorySection />
       <CoverageSection />
+      <Hotlines />
 
       <Footer />
     </div>

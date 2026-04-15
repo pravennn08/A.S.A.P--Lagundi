@@ -20,7 +20,7 @@ const SitioReportsModal = ({ open, onClose, sitioReports = [] }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 py-6"
+      className="fixed inset-0 z-[9999] bg-black/40 h-screen backdrop-blur-sm flex items-center justify-center px-4 py-6"
       onClick={onClose}
     >
       <div
